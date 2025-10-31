@@ -1,0 +1,76 @@
+## Homework 3
+
+### Installing required packages and setting up firebase.
+
+- Creating and setting up firebase Project.
+
+  1.  Create a .env file pasting the content of the .env.example.
+  1.  Go to [Firebase website](https://firebase.google.com) and click `Go to console` on the top right of the page.
+  1.  Create a new project.
+  1.  While adding disable Google Analytics and Google Gemini for the project.
+  1.  On the project overview page, look-out for "+ Add App" under your project name and choose web.
+  1.  Register your app by giving it a name. Do not setup Firebase hosting. Once done you will be shown Step 2: Add Firebase SDK.
+  1.  Copy the values you get inside the firebase config and paste them in `.env` that you have in your repository. Only change the values, donot change the variable names.
+  1.  Replace the value of `default` in `.firebaserc.example` with your project id, and rename the file `.firebaserc`. You can find the Project id the config values that you just got from Firebase. Also, you can run `npm run emulators` command to login into your firebase account and choose your project id.
+
+- Make sure you have Java installed on your system. This is required for running Firebase emulator.
+- Open the terminal window and type in `npm install`. This will install all the dependencies listed in the `package.json` file and will create a folder `node_modules` where all these dependencies will be installed.
+- If everything is set-up nice, you should be able to start by running `npm run dev` in the terminal. The command would simultaneously start the firebase emulators and dev server for the website.
+
+## Expected Schema for Firebase
+
+- users (collection) -> uid (document) -> expenses (subcollection) -> expenseId (document) -> description, date, cost, deleted, createdAt (fields)
+
+1. Start with a collection called users and leave it empty. Inside this collection, the utils code will take care of setting up the document based on uid of the user.
+2. Further, expenses subcollection is created which contains the document (ExpenseId) having the description, the date, the cost of the expense, the "createdAt" timestamp and the boolean "deleted".
+
+## Skeleton code
+
+The skeleton code of the application is designed to foster your knowledge on using serverless services and reactivity. This assignment can be considered as Assignment 2 on steroids. It uses [Vite](https://vitejs.dev/) which provides a fast development environment and supports modern JavaScript frameworks like React. It also offers excellent flexibility for working with client-side rendering (CSR) and integration with serverless backends. Firebase is being used to provide a serverless datastore that your application interacts with. Furthermore, the assignment includes a Firebase emulator that allows you to develop and test your application locally, covering both Auth and Firestore without affecting your live Firebase project. By the end of this assignment, you should have a solid understanding of how to convert a static project into a dynamic, reactive one using one of the most in-demand serverless platforms.
+
+## Navigating and starting project
+
+Before running the project please make sure that you have installed all the dependencies mentioned in the step `Installing required packages`. Start the project by typing `npm run dev` in a tab of the terminal, which would simultaneously start the firebase emulators and dev server for the website. Open the URL for website in the browser and start working on the assignment.
+
+When you browse the link, it should take you to the **Sign In** page that will show you **Sign In** and **Create Account** buttons. Explore the app by navigating through the various tabs after creating an account/signing in to see the expense of a particular user.
+
+To start navigating through the project, begin with the **`App.tsx`** file inside the `src` directory. Being a multi-paged React application powered by **Vite**, each component under the `src/pages` directory corresponds to a unique route handled through **React Router**.
+
+Since we are now using **Firestore** as the database, the way we fetch and filter expenses has slightly changed—moving the logic from Firestore queries to the client-side application. This gives you more control over the fetched data and allows easier handling of state and reactivity in React.
+
+- Inside src, there is utils containing the authentication and database crud functions to connect with Firebase. Complete the TODOs inside each function to implement the Firebase CRUD operations required for the app.
+- Also, the firebase directory sets up the required connection for authentication and database based on your Firebase's config.
+
+## Deliverables
+
+Your code must function identically to the fully functional application.
+
+1. There are TODOs and expected behaviors well commented for your reference.
+
+2. As part of this assignment, you are required to complete the util APIs that enable storing, retrieval and deletion of data from Firestore.
+
+3. You also need to complete the registration, login and logout service for your application.
+
+## Testing your code
+
+To use the provided test suite run `npm run test:integration`. This will spawn the firebase emulators for you and run the vitest. For this reason, make sure to have closed any running instance of the emulators.
+
+If you already have emulators running, then you can run `npm run test` to run the test cases against the Firebase emulators.
+
+As with other assignments, any reasonable-quality test cases that you provide to the class (integration or unit, take your pick) will be eligible for extra credit.
+
+## Using live Firebase
+
+The tests for this homework are executed using the **Firebase Emulators**. However, if you want to run your app with the **live Firebase project**, you need to:
+
+1. Set the environment variable **`VITE_FB_USE_EMULATORS`** to **`0`**.
+1. Go to your project console, select Authentication > Sign-in method and enable `Email/Password`
+1. Go to your project console, select Cloud Firestore > Create database > Next > Start in test mode
+
+Note that this is not required for the homework.
+
+## Points
+
+| Task              | Points |
+| ----------------- | ------ |
+| App Functionality | 90     |

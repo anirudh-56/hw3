@@ -1,0 +1,6 @@
+//Add your firebase project id to default and rename to .firebaserc
+{
+  "projects": {
+    "default": "your-project-id"
+  }
+}
