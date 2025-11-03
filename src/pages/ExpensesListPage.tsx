@@ -1,4 +1,4 @@
-import React, { use, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ExpenseRow from "../ExpenseRow";
 import {
   fetchExpenses,
@@ -91,18 +91,23 @@ const ExpensesListPage: React.FC = () => {
     return Number.isNaN(t) ? 0 : t;
   };
 
-  //TODO: Change the sorting logic to implement useMemo
-  const sortedExpenses = [...expenses].sort((a, b) => {
-    //TODO: Have the sorting logic here for date(default when you land on the page) and cost, asc and desc.
-    //TODO: use the helper function `toTime`
-    let cmp = 0;
-    if (sortBy === "date") {
-      //TODO: Add logic
-    } else {
-      //TODO: Add logic
-    }
-    return sortDir === "asc" ? cmp : -cmp;
-  });
+   const sortedExpenses = useMemo(() => {
+    const arr = [...expenses];
+
+    arr.sort((a, b) => {
+      let cmp = 0;
+
+      if (sortBy === "date") {
+        cmp = toTime(a.date) - toTime(b.date);
+      } else {
+        cmp = Number(a.cost || 0) - Number(b.cost || 0);
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
+    return arr;
+  }, [expenses, sortBy, sortDir]);
+
 
   const toggleDir = () => setSortDir((d) => (d === "asc" ? "desc" : "asc"));
 
@@ -206,7 +211,11 @@ const ExpensesListPage: React.FC = () => {
         data-testid="expenses-list"
         style={{ height: LIST_HEIGHT }}
       >
-        {/* TODO: Implement the Empty List fallback using  <div className="no-expenses" data-testid="empty-state"> */}
+         {sortedExpenses.length === 0 ? (
+        <div className="no-expenses" data-testid="empty-state">
+          No expenses yet
+        </div>
+      ) : (
         <List
           rowComponent={ExpensesRowComponent}
           rowCount={sortedExpenses.length}
@@ -221,6 +230,7 @@ const ExpensesListPage: React.FC = () => {
             onDelete: deleteExpense,
           }}
         />
+        )}
       </div>
 
       <dialog

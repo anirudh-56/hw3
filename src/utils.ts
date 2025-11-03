@@ -17,6 +17,7 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
+  DocumentReference,
 } from "firebase/firestore";
 import { seedExpensesIfEmpty } from "./dev/seed";
 
@@ -38,8 +39,7 @@ export async function signUp(
   seed: boolean = true
 ) {
   try {
-    //TODO : Implement firebase email sign up functionality
-    const cred = null;
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
     const isLocal =
       typeof window !== "undefined" && location.hostname === "localhost";
 
@@ -47,8 +47,7 @@ export async function signUp(
       await seedExpensesIfEmpty(cred.user.uid, 100);
     }
 
-    //TODO: Return cred.user on success and Error on failure
-    //if (cred) return cred.user;
+    if (cred) return cred.user;
     throw Error("Signup not implemented");
   } catch (error) {
     throw error;
@@ -57,12 +56,24 @@ export async function signUp(
 
 export async function signIn(email: string, password: string) {
   try {
-    //TODO : Implement firebase email sign in functionality, similar to signUp function above
-    const cred = null;
-    //TODO: Return cred.user on success and Error on failure
-    throw Error("Sign in not implemented");
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+
+    const isLocal =
+      typeof window !== "undefined" && location.hostname === "localhost";
+
+    if (isLocal && cred) {
+      await seedExpensesIfEmpty(cred.user.uid, 100);
+    }
+
+    if (cred) return cred.user;
   } catch (e: any) {
-    throw e;
+    const err = new Error(
+      e?.message || "Failed to sign in. Please try again."
+    ) as Error & {
+      code?: string;
+    };
+    if (e?.code) err.code = e.code;
+    throw err;
   }
 }
 
@@ -70,8 +81,8 @@ export async function signOut() {
   if (!auth.currentUser) return;
 
   try {
-    //TODO: Use the firebase signOut function to sign out the current user and comment out the throw statement
-    throw Error("Sign out not implemented");
+    await fbSignOut(auth);
+
   } catch (e: any) {
     const err = new Error(
       e?.message || "Failed to sign out. Please try again."
@@ -118,17 +129,25 @@ function expensesCol(uid: string) {
 
 export const fetchExpenses = async (): Promise<Expense[] | {}> => {
   const uid = requireUid();
-  //TODO: Implement the query to fetch the list of expenses from Firestore for the currently signed-in user
-  const q = query(expensesCol(""));
 
-  //TODO: Use the getDocs function to execute the query and get the snapshot
-  const snap = null;
+  const q = query(
+    expensesCol(uid),
+    where("deleted", "==", false),
+    orderBy("date", "desc")
+  );
+
+  const snap = await getDocs(q);
 
   const list: Expense[] | {} = snap.docs.map((d) => {
     const x = d.data() as any;
 
-    //TODO: Map the fetched document to Expense type and return the list of expenses
-    return {};
+    return {
+      id: d.id,
+      description: String(x.description ?? ""),
+      date: String(x.date ?? ""),   
+      cost: Number(x.cost ?? 0),
+      deleted: Boolean(x.deleted ?? false),
+    };
   });
   return list;
 };
@@ -143,10 +162,16 @@ export const addExpense = async (expense: Omit<Expense, "id">) => {
     if (isNaN(Number(expense.cost)) || Number(expense.cost) < 0) {
       throw new Error("Enter a valid non-negative cost");
     }
-    //TODO: Implement the function add a new expense document to Firestore using the payload
-    const payload = {};
-    //TODO: Use the addDoc function to add the document to Firestore
-    await addDoc(expensesCol(""), payload);
+
+    const payload = {
+      description: expense.description.trim(),
+      date: String(expense.date),  
+      cost: Number(expense.cost),
+      deleted: false,
+      createdAt: serverTimestamp(),
+    };
+
+    await addDoc(expensesCol(uid), payload);
   } catch (error) {
     throw error;
   }
@@ -157,8 +182,7 @@ export const updateExpense = async (
   next: Partial<Expense> | TempEdit
 ) => {
   const uid = requireUid();
-  //TODO: Get the document reference for the expense to be updated
-  const ref = null;
+  const ref = await doc(db, "users", uid, "expenses", String(id));
 
   const body: any = {};
   if (next.description !== undefined) body.description = next.description;
@@ -166,11 +190,13 @@ export const updateExpense = async (
   if ((next as any).cost !== undefined) body.cost = Number((next as any).cost);
   if ((next as any).deleted !== undefined)
     body.deleted = !!(next as any).deleted;
-  //TODO: Use the updateDoc function to update the expense document in Firestore
+  await updateDoc(ref, body);
 };
 
 export const deleteExpense = async (id: string | number) => {
   const uid = requireUid();
   const ref = doc(db, "users", uid, "expenses", String(id));
   //TODO : Implement soft delete of expense
+
+  await updateDoc(ref, {deleted: true});
 };

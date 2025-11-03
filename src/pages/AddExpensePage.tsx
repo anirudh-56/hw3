@@ -26,9 +26,20 @@ const AddExpensePage: React.FC = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const trimmedDesc = desc.trim();
     const parsedCost = parseFloat(cost);
 
-    //TODO: Validate the parsedCost and description before submitting
+
+    if(!trimmedDesc){
+      openDialog("Description is required");
+      return;
+    }
+    if(Number.isNaN(parsedCost) || parsedCost < 0){
+      openDialog("Enter a valid non-negative cost");
+      return;
+    }
+
+
     const payload = {
       description: desc.trim(),
       date,
@@ -39,9 +50,9 @@ const AddExpensePage: React.FC = () => {
       await addExpense(payload);
       clear();
       navigate("/");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to add:", err);
-      openDialog("Failed to add expense");
+      openDialog(err?.message || "Failed to add expense");
     }
   };
 

@@ -23,8 +23,10 @@ const SignUp: React.FC<Props> = ({ redirectTo = "/" }) => {
       return;
     }
 
-    //TODO: Validate the matching of passwords before signing up the user
-    //For valid error content,refer the corresponding test case in App.test.tsx
+    if(password !== confirmPassword){{
+      setErr("Passwords do not match.");
+      return;
+    }}
 
     setLoading(true);
     try {
@@ -36,8 +38,7 @@ const SignUp: React.FC<Props> = ({ redirectTo = "/" }) => {
         throw new Error("Sign up failed. Try again.");
       }
 
-      //TODO: Redirect to the expense list on successful sign up
-      window.location.assign("");
+      window.location.assign(redirectTo);
     } catch (e: any) {
       const code = e?.code || "";
       const msg =

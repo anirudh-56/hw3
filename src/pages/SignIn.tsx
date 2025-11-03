@@ -30,6 +30,8 @@ const SignIn: React.FC<Props> = ({ redirectTo = "/" }) => {
       }
 
       //TODO: Redirect to the expense list on successful sign in
+      window.location.assign(redirectTo);
+
     } catch (e: any) {
       const msg =
         friendlyFirebaseError(e?.code) ||
